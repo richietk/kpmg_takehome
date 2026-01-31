@@ -15,7 +15,7 @@ OLLAMA STATUS: http://localhost:11434/
 ## Architecture
 
 - ingest.py processes the truncated data: stores 10k articles as json, keeps title, text, url for each article.
-- retriever.py splits text into 256 tokens per chunk with a 20 token overlap, builds embedding with paraphrase-MiniLM-L3-v2 model, uses FAISS index for vector storage with cosine-similarity. For this demo run, this resulted in 38k chunks.
+- retriever.py splits text into 256 tokens per chunk with a 20 token overlap, builds embedding with paraphrase-MiniLM-L3-v2 model, uses FAISS index for vector storage with cosine-similarity.
 - in retriever.py, FAISS first retrieves the top20 candidates then the cross encoder reranks the top-k chunks
 - pipeline.py constructs the prompt, calls ollama and returns the answer.
 
