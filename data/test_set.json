@@ -1,0 +1,52 @@
+[
+  {
+    "query": "What is venture capital?",
+    "relevant_docs": ["Venture capital", "Private equity", "Startup company"],
+    "reference_answer": "Venture capital is a form of private equity financing provided to early-stage, high-potential companies in exchange for equity ownership, typically involving high risk but potentially high returns."
+  },
+  {
+    "query": "What is mezzanine capital?",
+    "relevant_docs": ["Mezzanine capital", "Private equity", "Venture capital"],
+    "reference_answer": "Mezzanine capital is a hybrid form of financing that combines elements of debt and equity, typically used by companies to fund expansion or acquisitions, positioned between senior debt and equity in the capital structure."
+  },
+  {
+    "query": "What is the London Stock Exchange?",
+    "relevant_docs": ["London Stock Exchange", "Tokyo Stock Exchange", "Bombay Stock Exchange"],
+    "reference_answer": "The London Stock Exchange is one of the world's oldest and largest stock exchanges, providing a marketplace for companies to raise capital through listing shares and for investors to buy and sell securities."
+  },
+  {
+    "query": "What is the role of a central bank?",
+    "relevant_docs": ["Financial Stability Board", "Saudi Central Bank", "Reserve Bank of Australia"],
+    "reference_answer": "A central bank manages a country's monetary policy, regulates the banking system, controls money supply, sets interest rates, and acts as lender of last resort to maintain financial stability and economic growth."
+  },
+  {
+    "query": "What is return on investment?",
+    "relevant_docs": ["Return on investment", "Financial accounting", "Corporate Finance Institute"],
+    "reference_answer": "Return on investment (ROI) is a financial metric used to evaluate the profitability of an investment, calculated by dividing the net profit by the initial cost of the investment and expressed as a percentage."
+  },
+  {
+    "query": "What is private equity?",
+    "relevant_docs": ["Private equity", "Venture capital", "Mezzanine capital"],
+    "reference_answer": "Private equity refers to investment funds that acquire ownership stakes in private companies or take public companies private, typically aiming to improve operations and increase value before eventually selling for a profit."
+  },
+  {
+    "query": "What is disposable income?",
+    "relevant_docs": ["Disposable income", "Cost of living", "Political economy"],
+    "reference_answer": "Disposable income is the amount of money that households have available for spending and saving after income taxes have been deducted, serving as a key indicator of consumer purchasing power and economic health."
+  },
+  {
+    "query": "What are investment banks like Morgan Stanley?",
+    "relevant_docs": ["Morgan Stanley", "Lehman Brothers", "Citigroup"],
+    "reference_answer": "Investment banks are financial institutions that provide services including underwriting securities, facilitating mergers and acquisitions, managing assets, and providing advisory services to corporations, governments, and wealthy individuals."
+  },
+  {
+    "query": "What is the Dow Jones Industrial Average?",
+    "relevant_docs": ["Dow Jones Industrial Average", "London Stock Exchange", "Tokyo Stock Exchange"],
+    "reference_answer": "The Dow Jones Industrial Average is a stock market index that tracks 30 large, publicly-owned blue-chip companies trading on U.S. stock exchanges, serving as a key indicator of overall market performance."
+  },
+  {
+    "query": "What is a credit union?",
+    "relevant_docs": ["Credit union", "Navy Federal Credit Union", "United Bank of India"],
+    "reference_answer": "A credit union is a member-owned financial cooperative that provides traditional banking services like savings accounts, loans, and other financial products, typically offering better rates than traditional banks because they are not-for-profit organizations."
+  }
+]

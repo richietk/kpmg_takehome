@@ -1,0 +1,11 @@
+{
+  "retrieval_metrics": {
+    "avg_recall_at_k": 0.3333333333333333,
+    "avg_precision_at_k": 0.5399999999999999,
+    "avg_mrr": 0.9
+  },
+  "answer_metrics": {
+    "avg_rouge_l_f1": 0.22408451858510287
+  },
+  "num_queries": 10
+}
