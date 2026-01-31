@@ -2,33 +2,42 @@
 ## README
 
 DEMO: http://localhost:8501/
+
 DOCS: http://localhost:8000/docs
+
 STATS: http://localhost:8000/stats
+
 HEALTH: http://localhost:8000/health
+
 OLLAMA STATUS: http://localhost:11434/
-
-readme for the assignment
-retrieval from 10k finance/economics wikipedia articles, rank via semantic search, cross encoder reranking, use local phi4-mini:3.8b to answer.
-
-demo: run ./setup_docker.sh.
-access on http://localhost:8501
-
-The original data has been downloaded manually and truncated to 10k articles using utils/truncate_data.py
-https://www.kaggle.com/datasets/akhiltheerthala/wikipedia-finance
 
 
 ## Architecture
-user query -> streamlit UI (port 8501) -> http request -> fastAPI backend (port 8000) -> retriever -> reranker -> generator -> answer served
+
+- ingest.py processes the truncated data: stores 10k articles as json, keeps title, text, url for each article.
+- retriever.py splits text into 256 tokens per chunk with a 20 token overlap, builds embedding with paraphrase-MiniLM-L3-v2 model, uses FAISS index for vector storage with cosine-similarity. For this demo run, this resulted in 38k chunks.
+- in retriever.py, FAISS first retrieves the top20 candidates then the cross encoder reranks the top-k chunks
+- pipeline.py constructs the prompt, calls ollama and returns the answer.
 
 Retriever uses semantic search. For embeddings, paraphrase-MiniLM-L3-v2 is used, for vector store FAISS.
 For the reranker, ms-marco-MiniLM-L-6-v2 is used. 
 For the generator, ollama phi4-mini (3.8B params) is used.
 
-evaluator: evaluate via 10 LLM generated test queries. report retrieval metrics (e.g. did we retrieve the relevant chunks) and answer quality metrics (is LLMs answer similarto ground truth answer?)
+`evaluator.py`: evaluate via 10 LLM generated test queries. report retrieval metrics (e.g. did we retrieve the relevant chunks) and answer quality metrics (is LLMs answer similarto ground truth answer?)
+
+## NOTES
+
+It needs local ollama with phi4-mini:3.8b pulled to work.
+
+demo afterwards run ./setup_docker.sh
+
+The original data has been downloaded manually and truncated to 10k articles using utils/truncate_data.py
+https://www.kaggle.com/datasets/akhiltheerthala/wikipedia-finance
+
 
 ## Justifications
 
-`sentence-transformers/paraphrase-MiniLM-L3-v2` is used for embedding because it is small for demo and fast for real-time retrieval. It is trained on paraphrase data, embeds using cos-sim search and runs on CPU for this demo.
+`sentence-transformers/paraphrase-MiniLM-L3-v2` is used for embedding because it is small for demo and fast for real-time retrieval. It is trained on paraphrase data, runs on CPU for this demo.
 
 `FAISS`is used for vector store because it is industry standard, fast, uses ANN which should be effective, memory efficient, scalable, and is self-contained with no external dependencies. Alternatives such as Pinecone require external services
 
@@ -55,8 +64,6 @@ Streamlit is the UI framework because it is fast, python-native, good for demos 
    ```
 
 **Streamlit UI:** http://localhost:8501
-**FastAPI Docs:** http://localhost:8000/docs
-**API Health:** http://localhost:8000/health
 
 
 ## Usage
@@ -99,7 +106,6 @@ curl -X POST http://localhost:8000/answer \
 For this demo, evaluation is on 10 ChatGPT-generated "ground-truth" queries. For a production system, a separate ground-truth dataset should be used.
 
 ```bash
-# Ensure Ollama is running and vector store exists
 python evaluation.py
 ```
 
@@ -107,16 +113,18 @@ Since evaluation takes a while, results are available on data/evaluation_results
 
 
 Metrics calculated:
-**retrieval**
-Recall@k (retrieved relevant docs / all relevant docs)
-Precision@k (retrieved relevant docs / all retrieved docs)
-MRR (position of first relevant result)
-**answer quality**
-- ROUGE-L F1 (overlap between generated and reference answers (longest common subsequence))
 
-Interpretations:
-good retrieval + bad answer qual: low answer quality, might benefit from a better model to generate answer
-bad retrieval + good answer qual: model might hallucinate from parametric knowledge
+**retrieval**
+
+- Recall@k (retrieved relevant docs / all relevant docs)
+
+- Precision@k (retrieved relevant docs / all retrieved docs)
+
+- MRR (position of first relevant result)
+
+**answer quality**
+
+- ROUGE-L F1 (overlap between generated and reference answers (longest common subsequence))
 
 tuning is possible relatively separately in the 2 metric categories (retrieval can be tuned with top-k value and reranking, as well as increasing train data, answer quality via prompting, model choice, temperature)
 
@@ -124,8 +132,8 @@ tuning is possible relatively separately in the 2 metric categories (retrieval c
 
 - deploy as a cloud-hosted web app on a cloud-platform with auth, so its accessible without local setup, automatically scales and restricts access to authenticated users. Docker containers could be displayed to a cloud service, an auth layer like OAuth2 could be implemented, using a better LLM (e.g. a managed API like Claude)
 - a chatbot interface could be implemented in Slack, Teams, etc, for internal users and employees. Could be deployed on internal documentation. a Slack bot or an MSFT Teams bot, connecting it to fastAPI backend, maybe adding slash commands or a @mention command.
-- providing a RESTAPI. The fastAPI could be used as a library for applications to embed into existing workflows and enable programmatic access. FastAPI could be published, and a python/JS/TS SDK created. Could be useful for internal work e.g. for dashboarding, statistics, or to automate knowledge base updates.
-- implement it production-ready, as in this demo, vector store is in memory, it is not cached, the vector database is not a professionally managed one like Pinecone or Qdrant etc. caching for frequent queries could be added, as well as a load-balancer. Model could be maybe quantized, depending on needs and constraints. security should be enhanced to protect against prompt injections and such.
+- providing a RESTAPI. The fastAPI could be used as a library for applications to embed into existing workflows and enable programmatic access. FastAPI could be published, and an SDK created. Could be useful for internal work e.g. for dashboarding, statistics.
+- implement it production-ready, as in this demo, vector store is in memory, it is not cached, the vector database is not a professionally managed and the LLM runs locally. caching for frequent queries could be added. Model could be maybe quantized, depending on needs and constraints. security should be enhanced to protect against prompt injections and such.
 
 ## Project Structure
 ```
@@ -148,11 +156,6 @@ kpmg_takehome/
     │   └── index.pkl
     ├── test_set.json          # AI-generated test-set for demo
     └── evaluation_results.json # Evaluation output (already ran for demo)
+└── utils/
+    ├── truncate_data.py       # util script to truncate original data
 ```
-
----
-
-- ingest.py processes the truncated data: stores 10k articles as json, keeps title, text, url for each article.
-- retriever.py splits text into 256 tokens per chunk with a 20 token overlap, builds embedding with paraphrase-MiniLM-L3-v2 model, uses FAISS index for vector storage with cosine-similarity. For this demo run, this resulted in 38k chunks.
-- in retriever.py, FAISS first retrieves the top20 candidates then the cross encoder reranks the top-k chunks
-- pipeline.py constructs the prompt, calls ollama and returns the answer.
