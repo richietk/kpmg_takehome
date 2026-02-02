@@ -1,5 +1,5 @@
 """
-Truncates original 313MB file to first 10,000 articles for demo purposes
+Truncates original 313MB file to first 10,000 articles for demo
 Source: https://www.kaggle.com/datasets/akhiltheerthala/wikipedia-finance
 """
 import json

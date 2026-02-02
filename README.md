@@ -29,17 +29,17 @@ Retriever uses semantic search. For embeddings, paraphrase-MiniLM-L3-v2 is used,
 For the reranker, ms-marco-MiniLM-L-6-v2 is used. 
 For the generator, ollama phi4-mini (3.8B params) is used.
 
-`evaluator.py`: evaluate via 10 LLM generated test queries. report retrieval metrics (e.g. did we retrieve the relevant chunks) and answer quality metrics (is LLMs answer similarto ground truth answer?)
+`evaluator.py`: evaluate via 10 LLM generated test queries. report retrieval metrics (e.g. did we retrieve the relevant chunks) and answer quality metrics (is LLMs answer similar to ground truth answer?)
 
 ## NOTES
 
 **Requirements:**
 - Local Ollama with phi4-mini:3.8b model (setup script handles pulling automatically)
-- Source data from Google Drive (see Data Setup section above)
+- Source data from Google Drive (see Data Setup section)
 
 **Data Source:**
 - Original dataset: [Kaggle - Wikipedia Finance](https://www.kaggle.com/datasets/akhiltheerthala/wikipedia-finance)
-- Truncated to 10k articles using `utils/truncate_data.py`
+- "Manually" truncated to 10k articles using `utils/truncate_data.py`
 - Pre-processed files available via Google Drive for convenience
 
 
@@ -56,7 +56,7 @@ For the generator, ollama phi4-mini (3.8B params) is used.
 
 FastAPI is used for the API framework. it is fast, modern, and has automatic Swagger UI
 
-Streamlit is the UI framework because it is fast, python-native, good for demos to sketch up a minimal proof-of-concept, and it auto-loads on code changes.
+Streamlit is the UI framework because it is fast, python-native, good for demos to sketch up a minimal proof-of-concept.
 
 ## Data Setup
 
@@ -124,11 +124,8 @@ The `setup_docker.sh` script will automatically:
 
 ## Troubleshooting
 
-**If Streamlit UI doesn't load:**
 - Check API health: `curl http://localhost:8000/health`
 - Check container logs: `docker logs rag-api` or `docker logs rag-streamlit`
-
-**If you see "ollama not running":**
 - Verify Ollama is running: `curl http://localhost:11434/api/tags`
 - If not, start it: `ollama serve` (in a separate terminal)
 - If model not found, pull manually: `ollama pull phi4-mini:3.8b`
@@ -167,16 +164,15 @@ curl -X POST http://localhost:8000/answer \
 
 **Expected response:**
 ```json
-{
-  "query": "What is Python?",
-  "answer": "Python is a high-level programming language...",
-  "sources": [
-    {"title": "Python (programming language)", "url": "https://..."},
-    {"title": "Guido van Rossum", "url": "https://..."}
-  ],
-  "num_chunks_retrieved": 3
+{"query":"What is machine learning?",
+"answer":"Machine learning is a subset of artificial intelligence where...",
+"sources": [
+  {"title":"Credit card fraud","url":"https://en.wikipedia.org/wiki/Credit_card_fraud"},
+  {"title":"Google DeepMind","url":"https://en.wikipedia.org/wiki/Google_DeepMind"},
+  {"title":"Caper AI","url":"https://en.wikipedia.org/wiki/Caper_AI"}
+],
+"num_chunks_retrieved":3
 }
-```
 
 ## Evaluation
 
@@ -197,20 +193,20 @@ Metrics calculated:
 
 - Precision@k (retrieved relevant docs / all retrieved docs)
 
-- MRR (position of first relevant result)
+- MRR (average of 1/rank of the first relevant doc across all queries)
 
 **answer quality**
 
-- ROUGE-L F1 (overlap between generated and reference answers (longest common subsequence))
+- ROUGE-L F1 (overlap between generated and reference answers using longest common subsequence)
 
 tuning is possible relatively separately in the 2 metric categories (retrieval can be tuned with top-k value and reranking, as well as increasing train data, answer quality via prompting, model choice, temperature)
 
 ## suggestions for end-user accessibility
 
-- deploy as a cloud-hosted web app on a cloud-platform with auth, so its accessible without local setup, automatically scales and restricts access to authenticated users. Docker containers could be displayed to a cloud service, an auth layer like OAuth2 could be implemented, using a better LLM (e.g. a managed API like Claude)
-- a chatbot interface could be implemented in Slack, Teams, etc, for internal users and employees. Could be deployed on internal documentation. a Slack bot or an MSFT Teams bot, connecting it to fastAPI backend, maybe adding slash commands or a @mention command.
-- providing a RESTAPI. The fastAPI could be used as a library for applications to embed into existing workflows and enable programmatic access. FastAPI could be published, and an SDK created. Could be useful for internal work e.g. for dashboarding, statistics.
-- implement it production-ready, as in this demo, vector store is in memory, it is not cached, the vector database is not a professionally managed and the LLM runs locally. caching for frequent queries could be added. Model could be maybe quantized, depending on needs and constraints. security should be enhanced to protect against prompt injections and such.
+- deploy as a cloud-hosted web app on a cloud-platform with auth, so its accessible without local setup, automatically scales and restricts access to authenticated users. An auth layer like OAuth2 could be implemented, using a better LLM (e.g. a managed API like Claude) would be useful.
+- a chatbot interface could be implemented in Slack, Teams, etc, for internal users and employees. Could be deployed on internal documentation. a Slack bot or an MSFT Teams bot, connecting it to backend, adding slash commands or a @mention command.
+- the fastAPI could be used as a library for applications to embed into existing workflows and enable programmatic access. FastAPI could be published, and an SDK created. Could be useful for internal work e.g. for dashboarding, statistics.
+- implement it production-ready. This demo uses local FAISS files (not a managed vector database service), has no query caching, and runs the LLM locally via Ollama. For production, a managed vector DB (e.g. Pinecone), query caching, a more capable LLM API, rate limiting, monitoring/logging, and security enhancements against attacks like prompt injection, should be implemented.
 
 ## Project Structure
 ```
