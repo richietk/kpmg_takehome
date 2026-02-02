@@ -230,7 +230,7 @@ kpmg_takehome/
     │   ├── index.faiss
     │   └── index.pkl
     ├── test_set.json          # AI-generated test-set for demo
-    └── evaluation_results.json # Evaluation output (already ran for demo)
+    └── evaluation_results.json # Evaluation output (already ran for demo with k=5)
 └── utils/
     ├── truncate_data.py       # Util script to truncate original data
 ```
