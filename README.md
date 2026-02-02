@@ -11,6 +11,12 @@ HEALTH: http://localhost:8000/health
 
 OLLAMA STATUS: http://localhost:11434/
 
+If it is working:
+
+- http://localhost:8501/ should load
+- `curl http://localhost:8000/health` should show `"status":"healthy","pipeline_loaded":true,"ollama_connected":true`
+- `curl http://localhost:11434/api/tags` should list phi4-mini
+
 
 ## Architecture
 
@@ -27,19 +33,22 @@ For the generator, ollama phi4-mini (3.8B params) is used.
 
 ## NOTES
 
-It needs local ollama with phi4-mini:3.8b pulled to work.
+**Requirements:**
+- Local Ollama with phi4-mini:3.8b model (setup script handles pulling automatically)
+- Source data from Google Drive (see Data Setup section above)
 
-demo afterwards run ./setup_docker.sh
+**Data Source:**
+- Original dataset: [Kaggle - Wikipedia Finance](https://www.kaggle.com/datasets/akhiltheerthala/wikipedia-finance)
+- Truncated to 10k articles using `utils/truncate_data.py`
+- Pre-processed files available via Google Drive for convenience
 
-The original data has been downloaded manually and truncated to 10k articles using utils/truncate_data.py
-https://www.kaggle.com/datasets/akhiltheerthala/wikipedia-finance
 
 
 ## Justifications
 
-`sentence-transformers/paraphrase-MiniLM-L3-v2` is used for embedding because it is small for demo and fast for real-time retrieval. It is trained on paraphrase data, runs on CPU for this demo.
+`sentence-transformers/paraphrase-MiniLM-L3-v2` is used for embedding because it is small and fast for real-time retrieval. It is trained on paraphrase data and runs efficiently on CPU, so it is easy to setup locally without GPU requirements
 
-`FAISS`is used for vector store because it is industry standard, fast, uses ANN which should be effective, memory efficient, scalable, and is self-contained with no external dependencies. Alternatives such as Pinecone require external services
+`FAISS`is used for vector store because it is industry standard, fast, uses ANN which should be effective, memory efficient, scalable, and is self-contained with no external dependencies. Alternatives such as Pinecone require external services.
 
 `ms-marco-MiniLM-L-6-v2` is used as a cross-encoder reranker. the bi-encoder is good, and the cross encoder should increase precision to capture relevance by scoring query-document pairs jointly. from the 20 candidates from the bi-encored, top-k chunks are reranked with cross-encoder. I chose this model because it is trained on MS MARCO and sufficient for local demo.
 
@@ -49,22 +58,90 @@ FastAPI is used for the API framework. it is fast, modern, and has automatic Swa
 
 Streamlit is the UI framework because it is fast, python-native, good for demos to sketch up a minimal proof-of-concept, and it auto-loads on code changes.
 
-## Prerequisites
+## Data Setup
 
-1. Docker & Docker Compose installed
-2. Ollama installed locally with model pulled:
+The source dataset and pre-built artifacts are available via Google Drive for convenience:
+
+**Google Drive:** `https://drive.google.com/drive/folders/1CUTd7Gsog19155mEWyaWmCfPte--s-4m?usp=sharing`
+
+It is recommended to download pre-built files to skip processing time:
+
+1. Download from Google Drive:
+   - `wikipedia_finance_trunc.jsonl` → place in `data/`
+   - `wiki_sample.json` → place in `data/`
+   - `vector_store/` folder → place in `data/`
+
+2. Your directory structure should look like:
+   ```
+   data/
+   ├── wikipedia_finance_trunc.jsonl
+   ├── wiki_sample.json
+   ├── vector_store/
+   │   ├── index.faiss
+   │   └── index.pkl
+   ├── test_set.json
+   └── evaluation_results.json
+   ```
+
+3. Then proceed to Setup section below
+
+Alternatively, building from scratch shows the full pipeline but building the vector store adds ~10 minutes on the first run.
+
+In this case, place `wikipedia_finance_trunc.jsonl` in `data/` and run the setup script.
+
+The `setup_docker.sh` script will automatically:
+1. Convert `wikipedia_finance_trunc.jsonl` → `wiki_sample.json`
+2. Build the vector store from scratch
+
+
+## Setup
+
+1. **Install prerequisites:**
+   - Docker & Docker Compose
+   - [Ollama](https://ollama.ai/) installed locally
+
+2. **Get the data** (see Data Setup section above)
+
+3. **Start Ollama server** (keep this running in a terminal):
    ```bash
-   ollama pull phi4-mini:3.8b
    ollama serve
    ```
 
-3. start docker: 
+4. **Run setup script** (in a new terminal):
    ```bash
    ./setup_docker.sh
    ```
+   This script will:
+   - Build and start Docker containers
+   - Automatically pull phi4-mini:3.8b model if needed
+   - Process data if needed (Option B)
+   - Set up the API and Streamlit UI
 
-**Streamlit UI:** http://localhost:8501
+5. **Access the demo:**
+   - **Streamlit UI:** http://localhost:8501
+   - **API docs:** http://localhost:8000/docs
 
+
+## Troubleshooting
+
+**If Streamlit UI doesn't load:**
+- Check API health: `curl http://localhost:8000/health`
+- Check container logs: `docker logs rag-api` or `docker logs rag-streamlit`
+
+**If you see "ollama not running":**
+- Verify Ollama is running: `curl http://localhost:11434/api/tags`
+- If not, start it: `ollama serve` (in a separate terminal)
+- If model not found, pull manually: `ollama pull phi4-mini:3.8b`
+
+**If data processing takes too long or fails:**
+- Use Option A from Data Setup section (download pre-built files from Google Drive)
+- This skips the 5-10 minute vector store build process
+
+**To restart everything:**
+```bash
+docker compose down
+./setup_docker.sh
+```
 
 ## Usage
 

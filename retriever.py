@@ -31,7 +31,11 @@ class DocumentRetriever:
             # make math easier for computer and avoids favoring longer chunks which have larger vectors
         )
         self.vector_store = None
-        self.text_splitter = TokenTextSplitter(chunk_size=256, chunk_overlap=20) #~1k chars with small overlap
+        self.text_splitter = TokenTextSplitter(chunk_size=256, chunk_overlap=20)  # ~1k chars with small overlap
+        # 256 tokens should be enough for the model to identify what the chunk is about while keeping it resource effective
+        # small overlap ensures answers are not cut off by chunking
+        # example: "What does Tesla sell?" "Tesla designs, manufactures, and [CUT TO NEXT CHUNK] sells cars."
+        # the first chunk doesn't say what Tesla sells, the second chunk doesn't say which company.
 
         # init cross-encoder for reranking
         self.use_reranker = use_reranker

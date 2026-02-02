@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.pyc
+.git/
+.gitignore
+*.md
+!README.md
+.vscode/
+.idea/
+*.swp
+.venv/
+venv/
+env/
+.DS_Store
+*.log
+utils/
+assignment/
