@@ -173,6 +173,7 @@ curl -X POST http://localhost:8000/answer \
 ],
 "num_chunks_retrieved":3
 }
+```
 
 ## Evaluation
 
@@ -215,7 +216,7 @@ kpmg_takehome/
 ├── streamlit_app.py        # Streamlit web interface
 ├── pipeline.py             # RAG pipeline orchestration
 ├── retriever.py            # Document retrieval & reranking
-├── ingest.py               # Data ingestion from Wikipedia
+├── ingest.py               # Data ingestion
 ├── evaluation.py           # Evaluation metrics
 ├── requirements.txt
 ├── Dockerfile 
@@ -223,12 +224,13 @@ kpmg_takehome/
 ├── setup_docker.sh         # Docker setup helper
 ├── README.md
 └── data/
-    ├── wiki_sample.json       # processed wikipedia articles
+    ├── wiki_sample.json       # Processed wikipedia articles
+    ├── wikipedia_finance_trunc.jsonl # Original dataset truncated
     ├── vector_store/          # FAISS index & embeddings
     │   ├── index.faiss
     │   └── index.pkl
     ├── test_set.json          # AI-generated test-set for demo
     └── evaluation_results.json # Evaluation output (already ran for demo)
 └── utils/
-    ├── truncate_data.py       # util script to truncate original data
+    ├── truncate_data.py       # Util script to truncate original data
 ```
